@@ -7,8 +7,10 @@ var cellHeight = 40;
 var playfieldColumns = 10;
 var playfieldRows = 18;
 
-var widthCanv = cellWidth * playfieldColumns;
-var heightCanv = cellHeight * playfieldRows + cellHeight;
+var widthCanv = cellWidth * playfieldColumns + 8;
+var heightCanv = cellHeight * playfieldRows + cellHeight + 8;
+
+var tetrisPlayField = null;
 
 //Game state
 var gameOver = true;
@@ -39,6 +41,8 @@ function setup() {
   frameRate(60);
   createCanvas(this.widthCanv,this.heightCanv);
   
+  tetrisPlayField = new TetrisPlayField(playfieldRows, playfieldColumns, 0, 44);
+  tetrisPlayField.initialize();
   strokePrimaryColor();
   strokeWeight(0);
 }
@@ -50,7 +54,7 @@ function draw() {
     
     if(!gameOver)
     {
-    
+      drawField();
     }
 
     drawHeader();
@@ -97,6 +101,11 @@ function drawSquareFrame()
   line(0, heightCanv, widthCanv, heightCanv);
   line(0, 0, 0, heightCanv);
   line(widthCanv, 0, widthCanv, heightCanv); 
+}
+
+function drawField()
+{
+  tetrisPlayField.draw();
 }
 
 
