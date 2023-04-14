@@ -14,9 +14,13 @@ var tetrisPlayField = null;
 
 //Game state
 var gameOver = true;
+var milliseconds = 0;
 var seconds = 0;
-var minutes = 0;
 var timeout;
+var millisecondsStep = 50;
+
+var lastStepPerformedAtMillisec = -1;
+var delayBetweenStepsMillisec = 300;
 
 function preload() {
   // try {
@@ -29,7 +33,9 @@ function preload() {
 //format total play time
 function getPlayTimeAsText()
 {
-  return (minutes + "").padStart(2,'0') + ":" + (seconds + "").padStart(2,'0');
+  var minutes = parseInt( seconds / 60);
+
+  return (minutes + "").padStart(2,'0') + ":" + ( parseInt(seconds - (minutes * 60)) + "").padStart(2,'0');
 }
 
 function setup() {
@@ -41,7 +47,7 @@ function setup() {
   frameRate(60);
   createCanvas(this.widthCanv,this.heightCanv);
   
-  tetrisPlayField = new TetrisPlayField(playfieldRows, playfieldColumns, 0, 44);
+  tetrisPlayField = new TetrisPlayField(playfieldRows, playfieldColumns, 5, 44);
   tetrisPlayField.initialize();
   strokePrimaryColor();
   strokeWeight(0);
@@ -54,6 +60,7 @@ function draw() {
     
     if(!gameOver)
     {
+      performStep();
       drawField();
     }
 
@@ -79,11 +86,11 @@ function draw() {
 
 function drawHeader()
 {
-  strokeWeight(8);
+  strokeWeight(4);
   strokePrimaryColor();
-  line(0, cellHeight, widthCanv, cellHeight);
+  // line(0, cellHeight, widthCanv, cellHeight);
 
-  strokeWeight(1);
+  strokeWeight(0);
   textSize(cellHeight / 2);
   textAlign(LEFT, CENTER);
   text("SCORE", 20, (cellHeight*0.5));
@@ -94,7 +101,7 @@ function drawHeader()
 
 function drawSquareFrame()
 {
-  strokeWeight(8);
+  strokeWeight(4);
   strokePrimaryColor();
   //x, y, x, y
   line(0, 0, widthCanv, 0);
@@ -108,6 +115,13 @@ function drawField()
   tetrisPlayField.draw();
 }
 
+function performStep(){
+  if(lastStepPerformedAtMillisec < 0 || milliseconds > lastStepPerformedAtMillisec + delayBetweenStepsMillisec)
+  {
+    lastStepPerformedAtMillisec = milliseconds;
+    this.tetrisPlayField.step();
+  }
+}
 
 function keyPressed(){
     //% left
@@ -116,15 +130,15 @@ function keyPressed(){
     //( down
     if(key == '%')
     {
-      
+      this.tetrisPlayField.moveLeft();
     }
     else if(key == '&')
     {
-      gameOver = true;
+      this.tetrisPlayField.rotate();
     }
     else if(key == '\'')
     {
-
+      this.tetrisPlayField.moveRight();
     }
     else if(key == '(')
     {
@@ -134,18 +148,33 @@ function keyPressed(){
     { 
       if(gameOver)
       {
+        // frameRate(60);
+        lastStepPerformedAtMillisec = 0;
+        milliseconds = 0;
         seconds = 0;
-        minutes = 0;
-        frameRate(60);
         gameOver = false;
         timer();
       }
     }
 }
 
+function rotationPerformed()
+{
+  lastStepPerformedAtMillisec += delayBetweenStepsMillisec / 4;
+}
+
+function add() {
+  milliseconds += millisecondsStep;
+  if(milliseconds >= 1000)
+  {
+    seconds = milliseconds / 1000;
+  }
+
+  timer();
+}
 
 function timer() {
-  // timeout = setTimeout(add, 1000);
+  timeout = setTimeout(add, millisecondsStep);
 }
 
 function strokePrimaryColor()
